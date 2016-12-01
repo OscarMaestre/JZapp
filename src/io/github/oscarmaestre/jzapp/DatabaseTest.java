@@ -33,14 +33,17 @@ public class DatabaseTest {
 		//System.out.println(names.toString());
 	}
 	@Test
-	public void testClassBuilder(){
+	public void testClassBuilder() throws SQLException{
 		String txt=db.createClass("ciclos");
 		System.out.println(txt);
 	}
 	@Test
 	public void testFields() throws SQLException{
-		ArrayList<Field> fields;
-		fields=db.getFields("ciclos");
+		ArrayList<Field<?>> fields;
+		fields=db.getFields("evaluaciones");
+		for (Field<?> f: fields){
+			System.out.println("Type:"+f.toString());
+		}
 	}
 
 }

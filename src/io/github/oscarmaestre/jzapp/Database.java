@@ -31,8 +31,8 @@ public class Database {
 		}
 		return tableNames;
 	}
-	public ArrayList<Field> getFields(String tableName) throws SQLException{
-		ArrayList<Field> fields=new ArrayList<Field>();
+	public ArrayList<Field<?>> getFields(String tableName) throws SQLException{
+		ArrayList<Field<?>> fields=new ArrayList<Field<?>>();
 		String sql="select * from %s";
 		
 		Statement st=conn.createStatement();
@@ -40,26 +40,29 @@ public class Database {
 		results.next();
 		ResultSetMetaData metadata=results.getMetaData();
 		int columns=metadata.getColumnCount();
-		System.out.println("Fields:"+columns);
-		for (int i=0; i<columns;i++){
+		
+		for (int i=1; i<=columns;i++){
 			
 			String fieldName=metadata.getColumnName(i);
-			int code=metadata.getColumnType(i);
-			String type=Field.getEquivalence(code);
-			Field f=new Field(fieldName, "tipo", type);
+			int columnType=metadata.getColumnType(i);
+			Field<?> f=Field.fieldFactory(fieldName, columnType);
 			fields.add(f);
 		}
 		return fields;
 	}
-	public String createClass ( String tableName, String endLine ){
+	public String createClass ( String tableName, String endLine ) throws SQLException{
 		String txt="";
 		txt+="public class %s {" + endLine;
 		txt+="\t %s" + endLine + endLine;
 		txt+="}";
+		ArrayList<Field<?>> fields=this.getFields(tableName);
+		for (Field f: fields){
+			
+		}
 		txt=String.format(txt, tableName, "attributes");
 		return txt;
 	}
-	public String createClass (String tableName){
+	public String createClass (String tableName) throws SQLException{
 		String endLine="\n";
 		String txt=this.createClass(tableName, endLine);
 		return txt;
