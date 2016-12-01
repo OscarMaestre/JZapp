@@ -4,9 +4,10 @@ import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.ArrayList;
-import java.util.ResourceBundle;
 
 public class Database {
 	Connection conn;
@@ -25,12 +26,31 @@ public class Database {
 		ResultSet rs=this.getTables();
 		while (rs.next()){
 			String temp=rs.getString("TABLE_NAME");
-			System.out.println(temp);
+			//System.out.println(temp);
 			tableNames.add(temp);
 		}
 		return tableNames;
 	}
-	
+	public ArrayList<Field> getFields(String tableName) throws SQLException{
+		ArrayList<Field> fields=new ArrayList<Field>();
+		String sql="select * from %s";
+		
+		Statement st=conn.createStatement();
+		ResultSet results=st.executeQuery(String.format(sql, tableName));
+		results.next();
+		ResultSetMetaData metadata=results.getMetaData();
+		int columns=metadata.getColumnCount();
+		System.out.println("Fields:"+columns);
+		for (int i=0; i<columns;i++){
+			
+			String fieldName=metadata.getColumnName(i);
+			int code=metadata.getColumnType(i);
+			String type=Field.getEquivalence(code);
+			Field f=new Field(fieldName, "tipo", type);
+			fields.add(f);
+		}
+		return fields;
+	}
 	public String createClass ( String tableName, String endLine ){
 		String txt="";
 		txt+="public class %s {" + endLine;

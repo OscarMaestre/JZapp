@@ -37,5 +37,10 @@ public class DatabaseTest {
 		String txt=db.createClass("ciclos");
 		System.out.println(txt);
 	}
+	@Test
+	public void testFields() throws SQLException{
+		ArrayList<Field> fields;
+		fields=db.getFields("ciclos");
+	}
 
 }

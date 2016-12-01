@@ -19,5 +19,8 @@ public class Field {
 	public String getJavaType() {
 		return javaType;
 	}
+	public static String getEquivalence(int type){
+		return "int";
+	}
 	
 }
