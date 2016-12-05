@@ -1,5 +1,6 @@
 package io.github.oscarmaestre.jzapp;
 
+import java.io.IOException;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -33,17 +34,17 @@ public class DatabaseTest {
 		//System.out.println(names.toString());
 	}
 	@Test
-	public void testClassBuilder() throws SQLException{
-		String txt=db.createClass("ciclos");
-		System.out.println(txt);
-	}
-	@Test
 	public void testFields() throws SQLException{
 		ArrayList<Field<?>> fields;
 		fields=db.getFields("evaluaciones");
 		for (Field<?> f: fields){
-			System.out.println("Type:"+f.toString());
+			System.out.print("F:"+f.toString());
 		}
+	}
+	@Test
+	public void testClassGeneration() throws SQLException, IOException{
+		String classContents=this.db.createClass("modulos");
+		System.out.println(classContents);
 	}
 
 }

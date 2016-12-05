@@ -1,0 +1,6 @@
+public class %s{
+	String tableName="%s";
+	/* Constants*/
+%s
+	/* End of constants*/
+}

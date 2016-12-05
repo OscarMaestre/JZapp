@@ -1,15 +1,19 @@
 package io.github.oscarmaestre.jzapp;
 
-import java.lang.reflect.ParameterizedType;
+
 import java.sql.Types;
 import java.util.Date;
 
 public class Field<T> {
 	private String fieldName;
 	private T value;
+	private String prefix="";
 	public Field(String name) {
 		super();
 		this.fieldName = name;
+	}
+	public void setNamePrefix(String prefix){
+		this.prefix=prefix;
 	}
 	
 	public static Field<?> fieldFactory(String name, int type){
@@ -23,8 +27,12 @@ public class Field<T> {
 			case Types.DATE: {
 				return new Field<Date>(name);
 			}
+			case Types.BOOLEAN:{
+				return new Field<Boolean>(name);
+			}
 		}
-		return null;
+		System.err.println("Unknown type for "+name+" with type "+type + " in name "+name+". Returning String.");
+		return new Field<String>(name);
 	}
 	public T getValue() {
 		return value;
@@ -32,13 +40,15 @@ public class Field<T> {
 	public void setValue(T value) {
 		this.value = value;
 	}
+	public String getConstantDeclaration(){
+		String fieldTemplate="\tpublic static String %s=\"%s\";\r\n";
+		String nameOfConstant=prefix+fieldName;
+		String capitalizedName=nameOfConstant.toUpperCase();
+		String fieldDeclaration=String.format(fieldTemplate, capitalizedName,fieldName);
+		return fieldDeclaration;
+	}
 	public String getFieldName() {
 		return fieldName;
 	}
-	public String toString(){
-		String str="";
-		ParameterizedType p;
-		p =this.getClass().getp
-		//return str;
-	}
+
 }
