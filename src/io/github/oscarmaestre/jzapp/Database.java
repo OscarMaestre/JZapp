@@ -135,7 +135,7 @@ public class Database {
 			ArrayList<Field<?>> fields=this.getFields(tableName);
 			constants+="\t/* Constants for table "+tableName+"*/"+EOL;
 			constants+="\tpublic static final String TABLE_"+tableName.toUpperCase() +
-					"=\""+tableName+"\""+EOL;
+					"=\""+tableName+"\";"+EOL;
 			for (Field<?> f: fields){
 				f.setNamePrefix(tableName.toUpperCase()+"_");
 				constants+=f.getConstantDeclaration();
@@ -178,7 +178,7 @@ public class Database {
 		return code;
 		
 	}
-	public void generateForeignKeysClass(String fileName,String packageName, String className) 
+	public void generateForeignKeysClass(String packageName, String className) 
 			throws SQLException, IOException
 	{
 		DatabaseMetaData dbMetadata=this.conn.getMetaData();
@@ -196,17 +196,18 @@ public class Database {
 				className,className,  className, className, className, 
 				codeAddingRelationships
 				);
-		this.saveStringToFile(fileName, code);
+		this.saveStringToFile(className+".java", code);
 		return ;
 		
 	}
 	public static void main(String[] args) throws SQLException, IOException{
-		if (args.length!=2){
+		if (args.length!=4){
 			System.err.println();
-			System.err.println("Please provide 3 arguments:");
+			System.err.println("Please provide 4 arguments:");
 			System.err.println("\t1.-The name of a SQLite3 database");
 			System.err.println("\t2.-A package name, like com.acme.app");
 			System.err.println("\t3.-A name (like Constants) for the class with the names of tables and fields");
+			System.err.println("\t4.-A name (like Relationships) for the class describing relationships");
 			System.err.println();
 			System.err.println("And you will obtain ");
 			System.err.println("\t1.-A group of files (one for each table) with the names of the table and its fields");
@@ -217,6 +218,7 @@ public class Database {
 		}
 		Database db=new Database(args[0]);
 		db.dumpClassesFiles();
-		db.dumpSingleClass(args[1], "Constantes");
+		db.dumpSingleClass(args[1], args[2]);
+		db.generateForeignKeysClass(args[1], args[3]);
 	}
 }
