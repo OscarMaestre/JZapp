@@ -98,15 +98,6 @@ public class Database {
 	private String getFieldsAsConstants(String tableName) throws SQLException{
 		String constants="";
 		ArrayList<Field<?>> fields=this.getFields(tableName);
-		for (Field f:fields){
-			constants += f.getConstantDeclaration();
-		}
-		return constants;
-	}
-	private String getFieldsAsConstantsPrefixedWithTableName(String tableName) throws SQLException{
-		String constants="";
-		ArrayList<Field<?>> fields=this.getFields(tableName);
-		
 		for (Field<?> f:fields){
 			constants += f.getConstantDeclaration();
 		}
@@ -210,7 +201,20 @@ public class Database {
 		
 	}
 	public static void main(String[] args) throws SQLException, IOException{
-		System.out.println(args[0]);
+		if (args.length!=2){
+			System.err.println();
+			System.err.println("Please provide 3 arguments:");
+			System.err.println("\t1.-The name of a SQLite3 database");
+			System.err.println("\t2.-A package name, like com.acme.app");
+			System.err.println("\t3.-A name (like Constants) for the class with the names of tables and fields");
+			System.err.println();
+			System.err.println("And you will obtain ");
+			System.err.println("\t1.-A group of files (one for each table) with the names of the table and its fields");
+			System.err.println("\t2.-A file with all the names of the tables and fields (the name of your 2nd parameter");
+			System.err.println("\t3.-A class that describes the relationships of the tables");
+			
+			return ;
+		}
 		Database db=new Database(args[0]);
 		db.dumpClassesFiles();
 		db.dumpSingleClass(args[1], "Constantes");
