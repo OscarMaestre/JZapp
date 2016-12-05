@@ -1,7 +1,6 @@
 package io.github.oscarmaestre.jzapp;
 
 import java.io.BufferedReader;
-import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
@@ -15,14 +14,17 @@ import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
-import java.util.ResourceBundle;
 
 import org.sqlite.JDBC;
+
 
 public class Database {
 	Connection conn;
 	DatabaseMetaData dbMetadata;
 	ResultSet catalogs;
+	protected final String SINGLE_CLASS_TEMPLATE = "ClassTemplate.txt";
+	protected final String CONSTANTS_CLASS_TEMPLATE = "ConstantsTemplate.txt";
+	protected final String EOL = System.getProperty("line.separator");
 	public Database (String filename) throws SQLException{
 		JDBC driver=new JDBC();
 		DriverManager.registerDriver(driver);
@@ -73,8 +75,8 @@ public class Database {
 	    }          
 	    return sb.toString().trim();
 	}  
-	public String getClassTemplateAsString(String eol) throws IOException{
-		InputStream is=this.getClass().getResourceAsStream("ClassTemplate.txt");
+	public String getClassTemplateAsString(String file) throws IOException{
+		InputStream is=this.getClass().getResourceAsStream(file);
 		if (is==null){
 			return "NULL %s";
 		}
@@ -84,18 +86,27 @@ public class Database {
 		String line="";
 		line=bfr.readLine();
 		while (line!=null){
-			template += line + eol;
+			template += line + EOL;
 			line=bfr.readLine();
 		}
 		return template;		
 	}
 	public String getClassTemplateAsString() throws IOException{
-		return this.getClassTemplateAsString("\r\n");
+		return this.getClassTemplateAsString(this.CONSTANTS_CLASS_TEMPLATE);
 	}
 	
 	private String getFieldsAsConstants(String tableName) throws SQLException{
 		String constants="";
 		ArrayList<Field<?>> fields=this.getFields(tableName);
+		for (Field f:fields){
+			constants += f.getConstantDeclaration();
+		}
+		return constants;
+	}
+	private String getFieldsAsConstantsPrefixedWithTableName(String tableName) throws SQLException{
+		String constants="";
+		ArrayList<Field<?>> fields=this.getFields(tableName);
+		
 		for (Field f:fields){
 			constants += f.getConstantDeclaration();
 		}
@@ -112,7 +123,7 @@ public class Database {
 				tableName, constants);
 		return classCode;
 	}
-	public void dump() throws SQLException, IOException{
+	public void dumpClassesFiles() throws SQLException, IOException{
 		ArrayList<String> tableNames=this.getTableNames();
 		for (String tableName : tableNames){
 			System.out.println("Dumping "+tableName);
@@ -124,9 +135,38 @@ public class Database {
 			fw.close();
 		}
 	}
+	public void dumpSingleClass(String packageName,
+			String className) throws SQLException, IOException{
+		
+		ArrayList<String> tableNames=this.getTableNames();
+		String constants="";
+		for (String tableName : tableNames){
+			ArrayList<Field<?>> fields=this.getFields(tableName);
+			constants+="\t/* Constants for table "+tableName+"*/"+EOL;
+			constants+="\tpublic static final String TABLE_"+tableName.toUpperCase() +
+					"=\""+tableName+"\""+EOL;
+			for (Field<?> f: fields){
+				f.setNamePrefix(tableName.toUpperCase()+"_");
+				constants+=f.getConstantDeclaration();
+			}
+			constants+="\t/* End of constants for table "+tableName+"/*"+EOL+EOL;
+		}
+		String template=this.getClassTemplateAsString(this.CONSTANTS_CLASS_TEMPLATE);
+		String classCode;
+		
+		classCode=String.format(template, packageName, className, constants);
+		
+		System.out.println("Dumping "+className+".java");
+		FileWriter fw=new FileWriter(className+".java");
+		PrintWriter pw=new PrintWriter(fw);
+		pw.println(classCode);
+		pw.close();
+		fw.close();
+	}
 	public static void main(String[] args) throws SQLException, IOException{
 		System.out.println(args[0]);
 		Database db=new Database(args[0]);
-		db.dump();
+		db.dumpClassesFiles();
+		db.dumpSingleClass(args[1], "Constantes");
 	}
 }

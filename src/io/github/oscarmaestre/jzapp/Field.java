@@ -41,12 +41,13 @@ public class Field<T> {
 		this.value = value;
 	}
 	public String getConstantDeclaration(){
-		String fieldTemplate="\tpublic static String %s=\"%s\";\r\n";
+		String fieldTemplate="\tpublic static final String %s=\"%s\";\r\n";
 		String nameOfConstant=prefix+fieldName;
 		String capitalizedName=nameOfConstant.toUpperCase();
 		String fieldDeclaration=String.format(fieldTemplate, capitalizedName,fieldName);
 		return fieldDeclaration;
 	}
+	
 	public String getFieldName() {
 		return fieldName;
 	}

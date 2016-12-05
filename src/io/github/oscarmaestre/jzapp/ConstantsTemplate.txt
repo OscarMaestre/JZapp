@@ -1,0 +1,7 @@
+package %s;
+
+public class %s{
+	/* Tables and fields*/
+%s	
+	/* End of tables and fields*/
+}
