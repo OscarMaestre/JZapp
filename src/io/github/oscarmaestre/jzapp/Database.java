@@ -163,6 +163,31 @@ public class Database {
 		pw.close();
 		fw.close();
 	}
+	
+	public ResultSet getForeignKeys() throws SQLException{
+		DatabaseMetaData dbMetadata=this.conn.getMetaData();
+		ArrayList<String> tableNames=this.getTableNames();
+		ResultSet foreignKeys=null;
+		for (String tableName : tableNames){
+			System.out.println("Checking FK in :"+tableName);
+			foreignKeys=dbMetadata.getExportedKeys("", "", tableName);
+			while (foreignKeys.next()){
+				String tableReferenced=foreignKeys.getString("PKTABLE_NAME");
+				String fieldReferenced=foreignKeys.getString("PKCOLUMN_NAME");
+				
+				String tableWhichReferences=foreignKeys.getString("FKTABLE_NAME");
+				String fieldWhichReferences=foreignKeys.getString("PKCOLUMN_NAME");
+				String cad="%s(%s)==>%s(%s)";
+				String msg=String.format(cad, 
+						tableWhichReferences,fieldWhichReferences, 
+						tableReferenced,fieldReferenced);
+				System.out.println(msg);
+			}
+			
+		}
+		return foreignKeys;
+		
+	}
 	public static void main(String[] args) throws SQLException, IOException{
 		System.out.println(args[0]);
 		Database db=new Database(args[0]);

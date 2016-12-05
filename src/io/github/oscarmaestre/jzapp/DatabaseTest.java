@@ -46,5 +46,9 @@ public class DatabaseTest {
 		String classContents=this.db.createClass("modulos");
 		System.out.println(classContents);
 	}
+	@Test
+	public void testFK() throws SQLException, IOException{
+		this.db.getForeignKeys();
+	}
 
 }

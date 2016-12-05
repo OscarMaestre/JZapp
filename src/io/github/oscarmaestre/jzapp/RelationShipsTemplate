@@ -1,0 +1,29 @@
+package %s;
+
+public class %s{
+	protected String fkTablename;
+	protected String fkFieldname;
+	protected String pkTablename;
+	protected String pkFieldname;
+	public %s (String fkTablename, String fkFieldname, 
+		String pkTablename, String pkFieldname){
+		this.fkTablename=fkTablename;
+		this.fkFieldname=fkFieldname;
+		this.pkTablename=pkTablename;
+		this.pkFieldname=pkFieldname;
+	} 
+	public String getPktablename(){
+		return this.pkTablename;
+	}
+	public String getFktablename(){
+		return this.fkTablename;
+	}
+	public String getPkfieldname(){
+		return this.pkFieldname;
+	}
+	public String getFkfieldname(){
+		return this.fkFieldname;
+	}
+	
+	
+}
