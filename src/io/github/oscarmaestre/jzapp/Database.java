@@ -78,7 +78,7 @@ public class Database {
 	public String getClassTemplateAsString(String file) throws IOException{
 		InputStream is=this.getClass().getResourceAsStream(file);
 		if (is==null){
-			return "NULL %s";
+			return "NULL %s. No se cargo la plantilla "+file;
 		}
 		InputStreamReader isr=new InputStreamReader(is);
 		BufferedReader bfr=new BufferedReader(isr);
@@ -107,7 +107,7 @@ public class Database {
 		String constants="";
 		ArrayList<Field<?>> fields=this.getFields(tableName);
 		
-		for (Field f:fields){
+		for (Field<?> f:fields){
 			constants += f.getConstantDeclaration();
 		}
 		return constants;
@@ -156,36 +156,57 @@ public class Database {
 		
 		classCode=String.format(template, packageName, className, constants);
 		
-		System.out.println("Dumping "+className+".java");
-		FileWriter fw=new FileWriter(className+".java");
+		String fileName=className+".java";
+		System.out.println(fileName);
+		this.saveStringToFile(fileName, classCode);
+		
+	}
+	protected void saveStringToFile(String fileName, String str) throws IOException{
+		FileWriter fw=new FileWriter(fileName);
 		PrintWriter pw=new PrintWriter(fw);
-		pw.println(classCode);
+		pw.println(str);
 		pw.close();
 		fw.close();
 	}
+	protected String getCode(ResultSet foreignKeys, String className) throws SQLException{
+		String code="";
 	
-	public ResultSet getForeignKeys() throws SQLException{
+		while (foreignKeys.next()){
+			String tableReferenced=foreignKeys.getString("PKTABLE_NAME");
+			String fieldReferenced=foreignKeys.getString("PKCOLUMN_NAME");
+			
+			String tableWhichReferences=foreignKeys.getString("FKTABLE_NAME");
+			String fieldWhichReferences=foreignKeys.getString("PKCOLUMN_NAME");
+			String dataFmt="\t\tdata.add(new %s(\"%s\", \"%s\", \"%s\", \"%s\"));"+EOL;
+			String data=String.format(dataFmt, 
+					className,tableWhichReferences,fieldWhichReferences, 
+					tableReferenced,fieldReferenced);
+			//System.out.println(data);
+			code = code + data;
+		}
+		return code;
+		
+	}
+	public void generateForeignKeysClass(String fileName,String packageName, String className) 
+			throws SQLException, IOException
+	{
 		DatabaseMetaData dbMetadata=this.conn.getMetaData();
 		ArrayList<String> tableNames=this.getTableNames();
 		ResultSet foreignKeys=null;
+		String codeAddingRelationships="";
 		for (String tableName : tableNames){
 			System.out.println("Checking FK in :"+tableName);
 			foreignKeys=dbMetadata.getExportedKeys("", "", tableName);
-			while (foreignKeys.next()){
-				String tableReferenced=foreignKeys.getString("PKTABLE_NAME");
-				String fieldReferenced=foreignKeys.getString("PKCOLUMN_NAME");
-				
-				String tableWhichReferences=foreignKeys.getString("FKTABLE_NAME");
-				String fieldWhichReferences=foreignKeys.getString("PKCOLUMN_NAME");
-				String cad="%s(%s)==>%s(%s)";
-				String msg=String.format(cad, 
-						tableWhichReferences,fieldWhichReferences, 
-						tableReferenced,fieldReferenced);
-				System.out.println(msg);
-			}
+			codeAddingRelationships+= this.getCode(foreignKeys, className);
 			
 		}
-		return foreignKeys;
+		String template=this.getClassTemplateAsString("RelationshipsTemplate.txt");
+		String code=String.format(template, packageName, className,
+				className,className,  className, className, className, 
+				codeAddingRelationships
+				);
+		this.saveStringToFile(fileName, code);
+		return ;
 		
 	}
 	public static void main(String[] args) throws SQLException, IOException{

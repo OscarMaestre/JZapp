@@ -24,6 +24,10 @@ public class %s{
 	public String getFkfieldname(){
 		return this.fkFieldname;
 	}
-	
-	
+	public static ArrayList<%s> factoryOf%s(){
+		ArrayList<%s> data=new ArrayList<%s>();
+
+%s
+		return data;
+	}
 }

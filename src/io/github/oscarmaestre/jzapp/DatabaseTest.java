@@ -48,7 +48,7 @@ public class DatabaseTest {
 	}
 	@Test
 	public void testFK() throws SQLException, IOException{
-		this.db.getForeignKeys();
+		this.db.generateForeignKeysClass("Relaciones.java", "com.ies", "Relaciones");
 	}
 
 }
